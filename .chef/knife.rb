@@ -14,6 +14,7 @@ cookbook_path            ["#{current_dir}/../cookbooks"]
 # EC2:
 knife[:aws_access_key_id]     = "AKIAIFN275LP2RRZZQBQ"
 knife[:aws_secret_access_key] = "dQo9T9eAKu7hu85GCNcW/2CXLvA5SwzDn3hhcjQQ"
+knife[:aws_user_data] = ""
 
 # Rackspace:
 knife[:rackspace_api_key]      = "Your Rackspace API Key"
