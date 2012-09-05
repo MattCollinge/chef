@@ -1,0 +1,248 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+		]
+	},
+	"buffers":
+	[
+		{
+			"contents": "name \"mswebserver\"\ndescription \"The base role for MS systems that serve HTTP traffic\"\nrun_list \"recipe[apache2]\", \"recipe[apache2::mod_ssl]\", \"role[monitor]\"\nenv_run_lists \"_default\" => [\"recipe[apache2]\"], \"staging\" => [\"recipe[apache2::staging]\"]\ndefault_attributes \"apache2\" => { \"listen_ports\" => [ \"80\", \"443\" ] }\noverride_attributes \"apache2\" => { \"max_children\" => \"50\" }",
+			"file": "roles/webserver.rb",
+			"file_size": 378,
+			"file_write_time": 1344722335000000,
+			"settings":
+			{
+				"buffer_size": 378,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "roles/quote-robot.rb",
+			"settings":
+			{
+				"buffer_size": 322,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "git clone https://github.com/opscode/chef-repo.git\n\ncd /tmp\n\ncurl -O http://production.cf.rubygems.org/rubygems/rubygems-1.8.10.tg\n\ntar zxf rubygems-1.8.10.tgz\n\ncd rubygems-1.8.10\n\nsudo ruby setup.rb --no-format-executable\n\nsudo gem install chef --no-ri --no-rdoc\n\ncp ~/downloads/mattcollinge.pem ~/chef-repo/.chef\ncp ~/downloads/edit ~/chef-repo/.chef/mcenterprise-validator.pem\ncp ~/downloads/_knife_config.txt ~/chef-repo/.chef/knife.rb\n\nOR knife configure\n\nknife client list\n\nsudo gem install net-ssh net-ssh-multi fog highline --no-rdoc --no-ri --verbose\n\nvi ~/chef-repo/.chef/knife.rb\n\nsudo gem install knife-windows\n\nERROR:  Error installing knife-windows:\n	gssapi requires Ruby version >= 1.9.1.\n    \n/usr/bin/ruby -e \"$(/usr/bin/curl -fsSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)\"\n\nbrew help\n\nbrew update ruby\n\ngem install knife-windowsFetching: gssapi-1.0.3.gem (100%)ERROR:  While executing gem ... (Gem::FilePermissionError)\n    You don't have write permissions into the /Library/Ruby/Gems/1.8 directory.\n\n\nlrwxr-xr-x   1 root   wheel        76  8 Jul  2011 ruby -> ../../System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/ruby\n\nlrwxr-xr-x   1 root   wheel        74  8 Jul  2011 ri -> ../../System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/ri\n\nlrwxr-xr-x   1 root   wheel        76  8 Jul  2011 rake -> ../../System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/rake\n\n\ngem update --system  \n\ninstall rvm\n\nsource /Users/mattcollinge/.rvm/scripts/rvm\n\nrvm install 1.9\nrvm use 1.9 --default \n\nGet the Chef Client Installer: http://opscode.com/chef/install.msi \nInsttructions here: http://wiki.opscode.com/display/chef/Installing+Chef+Client+on+Windows\nAfter running start cmd prompt in admin mode\nrun: chef-client --version\nCopy your ORGANIZATION-validator.pem key to C:\\chef\\ORGANIZATION-validator.pem\n\nCreate C:\\chef\\client.rb\n\nPut this in it (replacing ORGANISATION) with real one:\n\nlog_level   :info\nlog_location    STDOUT\nchef_server_url \"https://api.opscode.com/organizations/ORGANIZATION\"\nvalidation_client_name \"ORGANIZATION-validator\"\nvalidation_key  \"c:/chef/ORGANIZATION-validator.pem\"\nclient_key  \"c:/chef/client.pem\"\nfile_cache_path   \"c:/chef/cache\"\nfile_backup_path  \"c:/chef/backup\"\ncache_options     ({:path => \"c:/chef/cache/checksums\", :skip_expires => true})\n\nrun: chef-client -c c:\\chef\\client.rb \n\n\nenable WinRM: winrm quickconfig -q\nIncrease max Shell memory usage from 100Mb: winrm set winrm/config/winrs @{MaxMemoryPerShellMB=\"300\"}\nIncreate timeout from 60 sec to 30 mins: winrm set winrm/config @{MaxTimeoutms=\"1800000\"}\n\nbootstrap windows:\nknife bootstrap windows winrm ec2-50-xx-xx-124.compute-1.amazonaws.com -r 'role[webserver],role[production]' -x Administrator -P 'super_secret_password'\n\nknife bootstrap windows winrm Win7-Dev -x matt -P 'xxxxx'\nknife winrm \"role:web\" \"net stats srv\" -x Administrator -P 'super_secret_password'\nknife winrm \"Win7-Dev\" \"net stats srv\" -x matt -P 'xxxxx'\n\nknife bootstrap windows-shell etc....\n\nunencrypted and basic auth:\nwinrm set winrm/config/service @{AllowUnencrypted=\"true\"}\nwinrm set winrm/config/service/auth @{Basic=\"true\"}\n\n\nknife.rb contents:\n\ncurrent_dir = File.dirname(__FILE__)\nlog_level                :info\nlog_location             STDOUT\nnode_name                \"mattcollinge\"\nclient_key               \"#{current_dir}/mattcollinge.pem\"\nvalidation_client_name   \"mcenterprise-validator\"\nvalidation_key           \"#{current_dir}/mcenterprise-validator.pem\"\nchef_server_url          \"https://api.opscode.com/organizations/mcenterprise\"\ncache_type               'BasicFile'\ncache_options( :path => \"#{ENV['HOME']}/.chef/checksums\" )\ncookbook_path            [\"#{current_dir}/../cookbooks\"]\n\ncp /Users/mattcollinge/Chef/mattcollinge.pem /Users/mattcollinge/.chef/mattcollinge.pem\n\n\n\nAdding a cookbok to the runlist:\n\nDownload a cookbook from Communit Site: knife cookbook site download getting-started\nUnpack tar: tar zxvf getting-started-0.4.0-tar.gz\nDelete tar: del getting-started-0.40.tar.gz\n\nUpload to Hosted Chef: knife cookbook upload getting-started\nAdd Cookbook to the run list: knife node run_list add Win7-Dev 'recipe[getting-started]'\n\nOn the Target Node run: chef-client -c client.rb\n\nTo remove the recipe from the run_list: knife node run_list remove Win7-Dev 'recipe[getting-started]'\n\nTo search for all nodes: knife search node 'name:*'\n\nDotNet Chef?...\n\nEC2:\nknife ec2 server create -r \"role[webserver]\" -I ami-ab9491df --flavor t1.micro -G www,default -x ubuntu -N mattsServer -S first-ec2-keypair\nInstall aws tools using homebrew:\nbrew install ec2-api-tools\n\ncreate .ec2 folder:\nmkdir ~/.ec2\n\ncreate file in .ec2 folder:\ntouch matt_gmail_aws\n\nadd:\nxport EC2_ACCESS_KEY=\"AKIAIFN275LP2RRZZQBQ\"\nexport EC2_SECRET_KEY=\"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\"\nexport JAVA_HOME=\"/System/Library/Frameworks/JavaVM.framework/Home\"\nexport EC2_PRIVATE_KEY=\"$(/bin/ls $HOME/.ec2/pk-*.pem)\"\nexport EC2_CERT=\"$(/bin/ls $HOME/.ec2/cert-*.pem)\"\nexport EC2_HOME=\"/usr/local/Cellar/ec2-api-tools/1.5.2.5/jars\" # ec2-version w/o date\nexport EC2_URL=\"ec2.eu-west-1.amazonaws.com\"\n\nexecute this:\nsource $HOME/.ec2/matt_gmail_aws\n\nOR add this to ~/.bash_profile:\necho now executing ~/.bash_profile\nif [[ -s $HOME/.ec2/matt_gmail_aws ]] then\n  source $HOME/.ec2/matt_gmail_aws\nfi\n\n\ngenerate a new key pair from AWS:\nec2-add-keypair eu-west-ec2-keypair > ~/.ec2/eu-west-ec2-keypair\n\nChange permissions so that we can add them to our key ring (default read for all is too loose):\nchmod go-r ~/.ec2/eu-west-ec2-keypair\n\ncheck permissions have changed:\nls -l ~/.ec2/eu-west-ec2-keypair\n\nadd ssh to key chain:\nssh-add ~/.ec2/eu-west-ec2-keypair\n\ncheck you added the ssh key:\nssh-add -l\n\ncopy local .ec2 folder to dropbox copy:\ncp -r ~/.ec2 ~/Dropbox/dotfiles/.ec2\n\nlink your .ec2 folder in dopbox to local .ec2 folder:\nln -nfs ~/Dropbox/dotfiles/.ec2 ~/.ec2\n\nec2-describe-availability-zones\n\nCreate instance: ('default' security zone has to exist before running)\n\nknife ec2 server create -r \"role[webserver]\" -I ami-ab9491df --flavor t1.micro -G default -x ubuntu -N aws-Test -S eu-west-ec2-keypair --region eu-west-1 -Z eu-west-1a\n\n!! Use this One !!\n\nknife ec2 server create -r \"role[webserver]\" -I ami-ab9491df --flavor t1.micro -G quick-start-1 -x ubuntu -N awsMC1 -S ec2-eu-west-key --region eu-west-1 -Z eu-west-1a\n\nknife ssh \"role:quote-robot\" -x ubuntu \"sudo chef-client\" -a ec2.public_hostname\n\nInstance ID: i-d1e08e99\nFlavor: t1.micro\nImage: ami-ab9491df\nRegion: eu-west-1\nAvailability Zone: eu-west-1a\nSecurity Groups: default\nTags: {\"Name\"=>\"aws-Test\"}\nSSH Key: eu-west-ec2-keypair\n\nWaiting for server...............\nPublic DNS Name: ec2-54-247-38-231.eu-west-1.compute.amazonaws.com\nPublic IP Address: 54.247.38.231\nPrivate DNS Name: ip-10-58-207-68.eu-west-1.compute.internal\nPrivate IP Address: 10.58.207.68\n\nInstall cookbook in chef server\nknife cookbook site install riak\n\nInstalling DataDog agent:\ncurl -L http://dtdg.co/dd-agent-osx | DD_API_KEY=905866a8d32c5161ecc8c49b0098b4a4 sh\n\nSetup launchd to run at startup:\n\nmkdir -p ~/Library/LaunchAgents\ncp ~/.datadog-agent/launchd/com.datadoghq.Agent.plist ~/Library/LaunchAgents/.\nlaunchctl load -w ~/Library/LaunchAgents/com.datadoghq.Agent.plist\n\nWindows::\n\nNeed to set up userdata in knife.rb:\nknife[:aws_user_data] = \"\"\n\nAWS User Data for Windows Instance:\n<script>\nipconfig /all > c:\\ipconfig.txt\nnetstat > c:\\netstat.txt\n\nwinrm quickconfig -q\nwinrm set winrm/config/winrs @{MaxMemoryPerShellMB=\"300\"}\nwinrm set winrm/config @{MaxTimeoutms=\"1800000\"}\n\nwinrm set winrm/config/service @{AllowUnencrypted=\"true\"}\nwinrm set winrm/config/service/auth @{Basic=\"true\"}\n</script>\n\n\n==========\n\n!! Use this One !!\n\nknife ec2 server create -r \"role[quote-robot]\" -I ami-ab9491df --flavor t1.micro -G quick-start-1 -x ubuntu -N aws-quote-robot1 -S ec2-eu-west-key --region eu-west-1 -Z eu-west-1a\n\nknife ssh \"role:quote-robot\" -x ubuntu \"sudo chef-client\" -a ec2.public_hostname",
+			"file": "Notes-MC",
+			"file_size": 7641,
+			"file_write_time": 1344805682000000,
+			"settings":
+			{
+				"buffer_size": 8013,
+				"line_ending": "Unix",
+				"name": "git clone https://github.com/opscode/chef-repo.git"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 360.0,
+		"selected_items":
+		[
+		],
+		"width": 384.0
+	},
+	"console":
+	{
+		"height": 0.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+	],
+	"find":
+	{
+		"height": 0.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"recipe"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 2,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "roles/webserver.rb",
+					"settings":
+					{
+						"buffer_size": 378,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								308,
+								308
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Ruby/Ruby.tmLanguage"
+						},
+						"translation.x": 2.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "roles/quote-robot.rb",
+					"settings":
+					{
+						"buffer_size": 322,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								93,
+								93
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Ruby/Ruby.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "Notes-MC",
+					"settings":
+					{
+						"buffer_size": 8013,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7879,
+								7879
+							]
+						],
+						"settings":
+						{
+							"auto_name": "git clone https://github.com/opscode/chef-repo.git",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 3506.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"replace":
+	{
+		"height": 0.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"qr",
+				"roles/quote-robot.rb"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true
+}

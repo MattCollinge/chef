@@ -190,8 +190,9 @@ knife ec2 server create -r "role[webserver]" -I ami-ab9491df --flavor t1.micro -
 
 !! Use this One !!
 
-knife ec2 server create -r "role[webserver]" -I ami-ab9491df --flavor t1.micro -G quick-start-1 -x ubuntu -N awsMC1 -S ec2-eu-west-keypair --region eu-west-1 -Z eu-west-1a
+knife ec2 server create -r "role[webserver]" -I ami-ab9491df --flavor t1.micro -G quick-start-1 -x ubuntu -N awsMC1 -S ec2-eu-west-key --region eu-west-1 -Z eu-west-1a
 
+knife ssh "role:quote-robot" -x ubuntu "sudo chef-client" -a ec2.public_hostname
 
 Instance ID: i-d1e08e99
 Flavor: t1.micro
@@ -237,3 +238,12 @@ winrm set winrm/config @{MaxTimeoutms="1800000"}
 winrm set winrm/config/service @{AllowUnencrypted="true"}
 winrm set winrm/config/service/auth @{Basic="true"}
 </script>
+
+
+==========
+
+!! Use this One !!
+
+knife ec2 server create -r "role[quote-robot]" -I ami-ab9491df --flavor t1.micro -G quick-start-1 -x ubuntu -N aws-quote-robot1 -S ec2-eu-west-key --region eu-west-1 -Z eu-west-1a
+
+knife ssh "role:quote-robot" -x ubuntu "sudo chef-client" -a ec2.public_hostname
